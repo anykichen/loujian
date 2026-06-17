@@ -1,0 +1,44 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build executable
+      run: |
+        pyinstaller --onefile --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name 漏检趋势追溯系统 app.py
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: 漏检趋势追溯系统
+        path: dist/漏检趋势追溯系统.exe
+    
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/漏检趋势追溯系统.exe
+        tag_name: v1.0.0
+        release_name: 漏检趋势追溯系统 v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
