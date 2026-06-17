@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -38,7 +41,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: dist/漏检趋势追溯系统.exe
-        tag_name: v1.0.0
-        release_name: 漏检趋势追溯系统 v1.0.0
+        tag_name: v1.0.1
+        name: 漏检趋势追溯系统 v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
