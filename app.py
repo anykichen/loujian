@@ -8,7 +8,7 @@
 - 启动时自动在默认浏览器打开页面，体验上像一个桌面程序。
 
 打包命令（在装好 pyinstaller 的 Windows 机器上执行）：
-    pyinstaller --onefile --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name 漏检趋势追溯系统 app.py
+    pyinstaller --onefile --noconsole --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name 漏检趋势追溯系统 app.py
 
 打包后双击 dist/漏检趋势追溯系统.exe 即可，浏览器会自动打开 http://127.0.0.1:5577
 """

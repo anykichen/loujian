@@ -28,7 +28,7 @@ jobs:
     
     - name: Build executable
       run: |
-        pyinstaller --onefile --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name 漏检趋势追溯系统 app.py
+        pyinstaller --onefile --noconsole --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name 漏检趋势追溯系统 app.py
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -41,7 +41,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: dist/漏检趋势追溯系统.exe
-        tag_name: v1.0.1
-        name: 漏检趋势追溯系统 v1.0.1
+        tag_name: v1.0.2
+        name: 漏检趋势追溯系统 v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
