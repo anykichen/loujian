@@ -29,7 +29,8 @@ jobs:
     - name: Build executable
       run: |
         pyinstaller --onefile --noconsole --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name leakapp app.py
-        ren dist\leakapp.exe 漏检趋势追溯系统.exe
+        powershell -Command "Rename-Item -Path 'dist/leakapp.exe' -NewName '漏检趋势追溯系统.exe'"
+        dir dist\*.exe
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -42,7 +43,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: dist/漏检趋势追溯系统.exe
-        tag_name: v1.0.5
-        name: 漏检趋势追溯系统 v1.0.5
+        tag_name: v1.0.6
+        name: 漏检趋势追溯系统 v1.0.6
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
