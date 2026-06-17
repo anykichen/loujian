@@ -29,12 +29,7 @@ jobs:
     - name: Build executable
       run: |
         pyinstaller --onefile --noconsole --add-data "templates;templates" --add-data "static;static" --icon "icon.ico" --name leakapp app.py
-        dir dist\*.exe
-        if (Test-Path 'dist/leakapp.exe') {
-          Rename-Item -Path 'dist/leakapp.exe' -NewName '漏检趋势追溯系统.exe'
-        } elseif (Test-Path 'dist/default.exe') {
-          Rename-Item -Path 'dist/default.exe' -NewName '漏检趋势追溯系统.exe'
-        }
+        python -c "import os; exe_files = [f for f in os.listdir('dist') if f.endswith('.exe')]; print('Found:', exe_files); [os.rename(f'dist/{f}', 'dist/漏检趋势追溯系统.exe') for f in exe_files]"
         dir dist\*.exe
     
     - name: Upload artifact
@@ -48,7 +43,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: dist/漏检趋势追溯系统.exe
-        tag_name: v1.0.7
-        name: 漏检趋势追溯系统 v1.0.7
+        tag_name: v1.0.8
+        name: 漏检趋势追溯系统 v1.0.8
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
