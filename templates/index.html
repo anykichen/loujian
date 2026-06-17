@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>漏检趋势追溯系统</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">QC</span>
+    <div class="brand-text">
+      <h1>漏检趋势追溯系统</h1>
+      <p>不良明细 · 漏检率 · 趋势追溯</p>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="project-selector">
+      <label class="field inline">
+        <span>专案</span>
+        <select id="projectSelect">
+          <option value="1">默认专案</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="kpi-strip" id="kpiStrip">
+      <div class="kpi-card" data-kpi="today">
+        <span class="kpi-label">今日漏检率</span>
+        <span class="kpi-value" id="kpiToday">--</span>
+      </div>
+      <div class="kpi-card" data-kpi="month">
+        <span class="kpi-label">本月漏检率</span>
+        <span class="kpi-value" id="kpiMonth">--</span>
+      </div>
+      <div class="kpi-card" data-kpi="year">
+        <span class="kpi-label">本年漏检率</span>
+        <span class="kpi-value" id="kpiYear">--</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="entry">数据录入</button>
+  <button class="tab-btn" data-tab="chart">趋势图表</button>
+  <button class="tab-btn" data-tab="manage">不良类型</button>
+  <button class="tab-btn" data-tab="projects">专案管理</button>
+</nav>
+
+<main>
+
+  <!-- ============ 数据录入 ============ -->
+  <section class="tab-panel active" id="panel-entry">
+    <div class="entry-grid">
+
+      <form class="card form-card" id="recordForm">
+        <div class="form-header">
+          <h2 id="formTitle">录入当日数据</h2>
+          <span class="form-project-badge" id="formProjectBadge">当前专案：默认专案</span>
+        </div>
+
+        <label class="field">
+          <span>日期</span>
+          <input type="date" id="f_date" required>
+        </label>
+
+        <label class="field">
+          <span>投入数</span>
+          <input type="number" id="f_input_qty" min="0" placeholder="0" required>
+        </label>
+
+        <div class="defect-grid" id="defectGrid"></div>
+
+        <p class="hint" id="formHint"></p>
+
+        <div class="form-actions">
+          <button type="submit" class="btn primary" id="submitBtn">保存</button>
+          <button type="button" class="btn ghost" id="resetBtn">清空</button>
+        </div>
+      </form>
+
+      <div class="card table-card">
+        <div class="table-card-head">
+          <h2>最近记录</h2>
+          <span class="muted" id="recordCount"></span>
+        </div>
+        <div class="table-scroll">
+          <table id="recordsTable">
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>投入数</th>
+                <th>漏检数</th>
+                <th>漏检率</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="recordsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 趋势图表 ============ -->
+  <section class="tab-panel" id="panel-chart">
+    <div class="card chart-card">
+      <div class="chart-controls">
+        <div class="seg" id="granularitySeg">
+          <button data-g="day" class="seg-btn active">日</button>
+          <button data-g="week" class="seg-btn">周</button>
+          <button data-g="month" class="seg-btn">月</button>
+          <button data-g="year" class="seg-btn">年</button>
+        </div>
+
+        <div class="range-fields">
+          <label class="field inline">
+            <span>起始</span>
+            <input type="date" id="rangeStart">
+          </label>
+          <label class="field inline">
+            <span>结束</span>
+            <input type="date" id="rangeEnd">
+          </label>
+          <button class="btn ghost small" id="refreshChartBtn">刷新</button>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="trendChart"></canvas>
+      </div>
+      <p class="chart-note">柱状：不良明细数量叠加（左轴）&nbsp;·&nbsp; 红线：总漏检率（右轴）&nbsp;·&nbsp; 柱上标签：该不良项的漏检率</p>
+
+      <div class="chart-table-section">
+        <h3>图表数据明细</h3>
+        <div class="table-scroll">
+          <table id="chartDataTable">
+            <thead id="chartDataThead"></thead>
+            <tbody id="chartDataTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 不良类型管理 ============ -->
+  <section class="tab-panel" id="panel-manage">
+    <div class="card">
+      <h2>不良类型管理</h2>
+      <p class="hint" style="color: var(--muted);">支持添加、修改、删除不良类型，排序决定在表单和图表中的显示顺序</p>
+
+      <div class="manage-form">
+        <label class="field">
+          <span>代码（英文，唯一）</span>
+          <input type="text" id="m_code" placeholder="如：scratch" pattern="[a-z_]+" title="只能包含小写字母和下划线">
+        </label>
+        <label class="field">
+          <span>名称（中文）</span>
+          <input type="text" id="m_name" placeholder="如：划痕">
+        </label>
+        <div class="form-actions">
+          <button type="button" class="btn primary" id="addDefectBtn">新增</button>
+          <button type="button" class="btn ghost" id="updateDefectBtn">更新</button>
+          <button type="button" class="btn ghost" id="cancelDefectBtn">取消</button>
+        </div>
+      </div>
+
+      <div class="table-scroll" style="margin-top: 20px;">
+        <table id="defectsTable">
+          <thead>
+            <tr>
+              <th>颜色</th>
+              <th>代码</th>
+              <th>名称</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="defectsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 专案管理 ============ -->
+  <section class="tab-panel" id="panel-projects">
+    <div class="card">
+      <h2>专案管理</h2>
+      <p class="hint" style="color: var(--muted);">支持添加、修改、删除专案，每个专案的数据独立存储</p>
+
+      <div class="manage-form">
+        <label class="field">
+          <span>名称</span>
+          <input type="text" id="p_name" placeholder="如：A产品线">
+        </label>
+        <label class="field">
+          <span>代码（英文，唯一）</span>
+          <input type="text" id="p_code" placeholder="如：product_a" pattern="[a-z_]+" title="只能包含小写字母和下划线">
+        </label>
+        <label class="field">
+          <span>描述</span>
+          <input type="text" id="p_description" placeholder="可选">
+        </label>
+        <div class="form-actions">
+          <button type="button" class="btn primary" id="addProjectBtn">新增</button>
+          <button type="button" class="btn ghost" id="updateProjectBtn">更新</button>
+          <button type="button" class="btn ghost" id="cancelProjectBtn">取消</button>
+        </div>
+      </div>
+
+      <div class="table-scroll" style="margin-top: 20px;">
+        <table id="projectsTable">
+          <thead>
+            <tr>
+              <th>名称</th>
+              <th>代码</th>
+              <th>描述</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="projectsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chartjs-plugin-datalabels.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
