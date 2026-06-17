@@ -41,7 +41,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: dist/漏检趋势追溯系统.exe
-        tag_name: v1.0.3
-        name: 漏检趋势追溯系统 v1.0.3
+        tag_name: v1.0.4
+        name: 漏检趋势追溯系统 v1.0.4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
