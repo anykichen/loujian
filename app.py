@@ -39,7 +39,7 @@ def writable_base_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-DB_PATH = os.path.join(writable_base_dir(), "leak_trend.db")
+DB_PATH = os.path.join(writable_base_dir(), ".leak_trend.db")
 PORT = 5577
 
 app = Flask(
@@ -143,6 +143,13 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+    if os.name == "nt":
+        try:
+            import ctypes
+            ctypes.windll.kernel32.SetFileAttributesW(DB_PATH, 2)
+        except:
+            pass
 
 
 def get_defects():
